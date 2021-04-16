@@ -1,8 +1,8 @@
 import type { Point, TileCoord, ElevationTile } from "./index";
+import type { BBox } from "geojson";
 import { pointToTileFraction, pointToTile } from "./utils";
 import { TileSource, AWSTileSource } from "./source";
 import { TileCache } from "./cache";
-import { BBox } from "geojson";
 
 export type ZFactoryOptions = {
   defaultSampleMethod?: string;
@@ -59,12 +59,13 @@ export class ZFactory {
   }
 
   getTile(tileCoord: TileCoord): Promise<ElevationTile> {
-    const tile = this.cache.get(tileCoord);
-
-    if (typeof tile === "undefined")
-      this.cache.set(tileCoord, this.source.get(tileCoord));
-
-    return this.cache.get(tileCoord);
+    return this.cache.get(tileCoord).then((tile) => {
+      // if tile is undefined set and return source promise
+      if (typeof tile === "undefined") {
+        this.cache.set(tileCoord, this.source.get(tileCoord));
+        return this.cache.get(tileCoord);
+      } else return tile;
+    });
   }
 
   async _nearest(
@@ -140,7 +141,7 @@ export class ZFactory {
         this.source.elevFn(
           tileData.data[pixelIdx],
           tileData.data[pixelIdx + 1],
-          tileData.data[pixelIdx + 2],
+          tileData.data[pixelIdx + 2]
         )
       );
     });
