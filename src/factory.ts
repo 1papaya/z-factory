@@ -60,15 +60,9 @@ export class ZFactory {
 
   getTile(tileCoord: TileCoord): Promise<ElevationTile> {
     if (!this.cache.has(tileCoord))
-      this.cache.set(tileCoord, this.source.get(tileCoord));
+      this.cache.load(tileCoord, this.source);
 
-    return this.cache.get(tileCoord).then((elevationTile) => {
-      if (typeof elevationTile === "undefined") {
-        this.cache.set(tileCoord, this.source.get(tileCoord));
-        return this.cache.get(tileCoord);
-      }
-      return elevationTile;
-    });
+    return this.cache.get(tileCoord);
   }
 
   async _nearest(

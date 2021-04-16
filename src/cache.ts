@@ -1,4 +1,4 @@
-import type { TileCoord, ElevationTile } from "./index";
+import type { TileCoord, TileSource, ElevationTile } from "./index";
 import * as fastpng from "fast-png";
 import * as path from "path";
 import * as fs from "fs";
@@ -7,17 +7,13 @@ export type TileCacheOptions = {
   verbose?: boolean;
 };
 
-const defaultTileCacheOptions = {
-  verbose: false,
-};
-
 export class TileCache extends Map {
   verbose: boolean;
 
   constructor(opt: TileCacheOptions = {}) {
     super();
 
-    this.verbose = opt.verbose || defaultTileCacheOptions.verbose;
+    this.verbose = opt.verbose || false;
   }
 
   get(tileCoord: TileCoord): Promise<ElevationTile> | undefined {
@@ -40,6 +36,10 @@ export class TileCache extends Map {
     );
   }
 
+  load(tileCoord: TileCoord, source: TileSource) {
+    return this.set(tileCoord, source.get(tileCoord));
+  }
+
   delete(tileCoord: TileCoord) {
     return super.delete(this._tileCoordString(tileCoord));
   }
@@ -57,44 +57,28 @@ export class FileTileCache extends TileCache {
     this.localPath = localPath;
   }
 
-  set(tileCoord: TileCoord, value: Promise<ArrayBuffer>) {
+  load(tileCoord: TileCoord, source: TileSource) {
     const localTilePath = path.join(
       this.localPath,
       `${this._tileCoordString(tileCoord)}.png`
     );
 
-    return super.set(
+    return this.set(
       tileCoord,
-      value.then((arrayBuffer) => {
-        return fs.promises
-          .mkdir(path.dirname(localTilePath), { recursive: true })
-          .then(() =>
-            fs.promises.writeFile(localTilePath, Buffer.from(arrayBuffer))
-          )
-          .then(() => arrayBuffer);
-      })
+      fs.promises.readFile(localTilePath).catch(() =>
+        source.get(tileCoord).then((arrayBuffer) =>
+          fs.promises
+            .mkdir(path.dirname(localTilePath), { recursive: true })
+            .then(() =>
+              fs.promises.writeFile(localTilePath, Buffer.from(arrayBuffer))
+            )
+            .then(() => arrayBuffer)
+        )
+      )
     );
   }
 
-  get(tileCoord: TileCoord): Promise<ElevationTile | undefined> {
-    if (!this.has(tileCoord)) {
-      const localTilePath = path.join(
-        this.localPath,
-        `${this._tileCoordString(tileCoord)}.png`
-      );
-
-      // if tile exists locally, return it
-      // if not, download it to local machine and return
-
-      return fs.promises
-        .readFile(localTilePath)
-        .then((tile) => {
-          this.set(tileCoord, new Promise((res) => res(tile)));
-          return this.get(tileCoord);
-        })
-        .catch(() => undefined);
-    }
-
-    return super.get(tileCoord);
+  _localTilePath(tileCoord: TileCoord) {
+    return path.join(this.localPath, `${this._tileCoordString(tileCoord)}.png`);
   }
 }

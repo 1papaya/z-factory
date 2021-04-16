@@ -110,7 +110,7 @@ export class MapTilerTileSource extends TileSource {
         `${baseUrl}/${tileCoord[0]}/${tileCoord[1]}/${tileCoord[2]}.png?key=${opt.apiKey}`,
       (r, g, b) => -10000 + (r * 256 * 256 + g * 256 + b) * 0.1,
       {
-        maxZoom: 10,
+        maxZoom: 11,
       },
       opt
     );
