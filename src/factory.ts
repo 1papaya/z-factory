@@ -59,12 +59,15 @@ export class ZFactory {
   }
 
   getTile(tileCoord: TileCoord): Promise<ElevationTile> {
-    return this.cache.get(tileCoord).then((tile) => {
-      // if tile is undefined set and return source promise
-      if (typeof tile === "undefined") {
+    if (!this.cache.has(tileCoord))
+      this.cache.set(tileCoord, this.source.get(tileCoord));
+
+    return this.cache.get(tileCoord).then((elevationTile) => {
+      if (typeof elevationTile === "undefined") {
         this.cache.set(tileCoord, this.source.get(tileCoord));
         return this.cache.get(tileCoord);
-      } else return tile;
+      }
+      return elevationTile;
     });
   }
 

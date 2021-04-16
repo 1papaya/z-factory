@@ -20,7 +20,7 @@ export class TileCache extends Map {
     this.verbose = opt.verbose || defaultTileCacheOptions.verbose;
   }
 
-  get(tileCoord: TileCoord): Promise<ElevationTile | undefined> {
+  get(tileCoord: TileCoord): Promise<ElevationTile> | undefined {
     return super.get(this._tileCoordString(tileCoord));
   }
 
