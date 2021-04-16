@@ -1,0 +1,20 @@
+{
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
+  "compilerOptions": {
+    "baseUrl": ".",
+    "allowJs": true,
+    "moduleResolution": "node",
+    "downlevelIteration": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "target": "es2015",
+    "module": "esnext",
+    "outDir": "dist"
+  },
+  "exclude": ["node_modules", "dist", "test"],
+  "include": ["src"]
+}
