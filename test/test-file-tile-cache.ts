@@ -32,6 +32,15 @@ describe("File Tile Cache", function () {
   });
 
   it(`correctly uses saved files when exists`, async function () {
+    class FakeTileSource extends AWSTileSource {
+      get(tileCoord: TileCoord): Promise<ArrayBuffer> {
+        return new Promise((res, rej) => {
+          throw new Error();
+        });
+      }
+    }
+    const fakeFactory = new ZFactory(new FakeTileSource(), cache);
+
     for (const tileCoord of [
       "1844/1706",
       "1844/1707",
@@ -44,8 +53,7 @@ describe("File Tile Cache", function () {
       ] as TileCoord;
 
       cache.delete(fullTileCoord);
-      const data = await cache.get(fullTileCoord);
-      assert(typeof data !== "undefined")
+      assert.doesNotThrow(async () => await fakeFactory.getTile(fullTileCoord));
     }
   });
 });
