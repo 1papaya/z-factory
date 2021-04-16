@@ -12,7 +12,6 @@ type TileSourceOptions = {
 };
 
 type TileSourceSpecs = {
-  width: number;
   maxZoom: number;
 };
 
@@ -21,7 +20,6 @@ export class TileSource {
   urlFn: Function;
 
   maxZoom: number;
-  width: number;
 
   verbose: boolean;
   _queue: any;
@@ -36,7 +34,6 @@ export class TileSource {
     this.elevFn = elevFn;
 
     this.maxZoom = specs.maxZoom;
-    this.width = specs.width;
 
     this.verbose = opt.verbose || false;
     this._queue = plimit(opt.concurrency || 4);
@@ -76,7 +73,6 @@ export class AWSTileSource extends TileSource {
       (r, g, b) => r * 256 + g + b / 256 - 32768,
       {
         maxZoom: 16,
-        width: 256,
       },
       opt
     );
@@ -96,7 +92,6 @@ export class NasaDemTileSource extends TileSource {
       (r, g, b) => 256 * r + g - 32768,
       {
         maxZoom: 11,
-        width: 512,
       },
       opt
     );
@@ -116,7 +111,6 @@ export class MapTilerTileSource extends TileSource {
       (r, g, b) => -10000 + (r * 256 * 256 + g * 256 + b) * 0.1,
       {
         maxZoom: 10,
-        width: 512,
       },
       opt
     );
@@ -136,7 +130,6 @@ export class MapboxTileSource extends TileSource {
       (r, g, b) => -10000 + (r * 256 * 256 + g * 256 + b) * 0.1,
       {
         maxZoom: 17,
-        width: 256,
       },
       opt
     );
