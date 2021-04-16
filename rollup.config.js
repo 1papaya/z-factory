@@ -76,7 +76,7 @@ export default [
     output: [
       {
         name: "zfactory",
-        file: "dist/z-factory.min.js",
+        file: "dist/z-factory.iife.js",
         format: "iife",
       },
     ],
