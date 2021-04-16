@@ -18,10 +18,8 @@ describe("Sample Methods", function () {
     for (const source of ["aws", "mapbox", "maptiler", "nasadem"]) {
       const sourceKey = `${source}-${sampleType}`;
 
-      correct[sourceKey] = JSON.parse(
-        fs.readFileSync(`./test/data/correct/${sourceKey}.geojson`, {
-          encoding: "utf8",
-        })
+      correct[sourceKey] = _.loadJson(
+        `./test/data/correct/${sourceKey}.geojson`
       );
     }
   }
