@@ -20,7 +20,7 @@ export class TileCache extends Map {
     this.verbose = opt.verbose || defaultTileCacheOptions.verbose;
   }
 
-  get(tileCoord: TileCoord): Promise<ElevationTile> | undefined {
+  get(tileCoord: TileCoord): Promise<ElevationTile | undefined> {
     return super.get(this._tileCoordString(tileCoord));
   }
 
@@ -31,10 +31,11 @@ export class TileCache extends Map {
   set(tileCoord: TileCoord, value: Promise<ArrayBuffer>) {
     return super.set(
       this._tileCoordString(tileCoord),
-      value.then((arrayBuffer) =>
-        Object.assign(fastpng.decode(arrayBuffer), {
-          coord: tileCoord,
-        })
+      value.then(
+        (arrayBuffer) =>
+          Object.assign(fastpng.decode(arrayBuffer), {
+            coord: tileCoord,
+          }) as ElevationTile
       )
     );
   }
@@ -65,15 +66,17 @@ export class FileTileCache extends TileCache {
     return super.set(
       tileCoord,
       value.then((arrayBuffer) => {
-        fs.mkdirSync(path.dirname(localTilePath), { recursive: true });
-        fs.writeFileSync(localTilePath, Buffer.from(arrayBuffer));
-
-        return arrayBuffer;
+        return fs.promises
+          .mkdir(path.dirname(localTilePath), { recursive: true })
+          .then(() =>
+            fs.promises.writeFile(localTilePath, Buffer.from(arrayBuffer))
+          )
+          .then(() => arrayBuffer);
       })
     );
   }
 
-  get(tileCoord: TileCoord): Promise<ElevationTile> {
+  get(tileCoord: TileCoord): Promise<ElevationTile | undefined> {
     if (!this.has(tileCoord)) {
       const localTilePath = path.join(
         this.localPath,
@@ -82,14 +85,14 @@ export class FileTileCache extends TileCache {
 
       // if tile exists locally, return it
       // if not, download it to local machine and return
-      if (fs.existsSync(localTilePath))
-        this.set(
-          tileCoord,
-          new Promise((res, rej) => {
-            res(fs.readFileSync(localTilePath));
-          })
-        );
-      else return undefined;
+
+      return fs.promises
+        .readFile(localTilePath)
+        .then((tile) => {
+          this.set(tileCoord, new Promise((res) => res(tile)));
+          return this.get(tileCoord);
+        })
+        .catch(() => undefined);
     }
 
     return super.get(tileCoord);
