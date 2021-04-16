@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "build": "rm -rf dist/* && rollup -c && tsc -d --emitDeclarationOnly --declarationDir dist/",
-    "test": "mocha test/test-*.ts"
+    "test": "mocha --timeout 0 test/test-*.ts"
   },
   "author": "",
   "license": "ISC",
