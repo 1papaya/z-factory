@@ -12,8 +12,6 @@ type TileSourceOptions = {
 
 type TileSourceSpecs = {
   width: number;
-  channels: number;
-  chunkSize: number;
   maxZoom: number;
 };
 
@@ -21,8 +19,6 @@ export class TileSource {
   elevFn: Function;
   urlFn: Function;
 
-  chunkSize: number;
-  channels: number;
   maxZoom: number;
   width: number;
 
@@ -38,8 +34,6 @@ export class TileSource {
     this.urlFn = urlFn;
     this.elevFn = elevFn;
 
-    this.chunkSize = specs.chunkSize;
-    this.channels = specs.channels;
     this.maxZoom = specs.maxZoom;
     this.width = specs.width;
 
@@ -82,8 +76,6 @@ export class AWSTileSource extends TileSource {
       {
         maxZoom: 16,
         width: 256,
-        chunkSize: 65536,
-        channels: 3,
       },
       opt
     );
@@ -101,8 +93,6 @@ export class NasaDemTileSource extends TileSource {
       {
         maxZoom: 11,
         width: 512,
-        chunkSize: 8192,
-        channels: 3,
       },
       opt
     );
@@ -120,8 +110,6 @@ export class MapTilerTileSource extends TileSource {
       {
         maxZoom: 10,
         width: 512,
-        chunkSize: 8192,
-        channels: 3,
       },
       opt
     );
@@ -139,8 +127,6 @@ export class MapboxTileSource extends TileSource {
       {
         maxZoom: 17,
         width: 256,
-        chunkSize: 32768,
-        channels: 3,
       },
       opt
     );
