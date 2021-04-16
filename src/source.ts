@@ -8,6 +8,7 @@ const plimit = plimit_;
 type TileSourceOptions = {
   concurrency?: number;
   verbose?: boolean;
+  apiKey?: string;
 };
 
 type TileSourceSpecs = {
@@ -83,12 +84,15 @@ export class AWSTileSource extends TileSource {
 }
 
 export class NasaDemTileSource extends TileSource {
-  constructor(apiKey: string, opt: TileSourceOptions = {}) {
+  constructor(opt: TileSourceOptions = {}) {
+    if (!("apiKey" in opt))
+      throw new Error(`apiKey required for NasaDem source`);
+
     const baseUrl = "https://www.nasadem.xyz/api/v1/dem";
 
     super(
       (tileCoord: TileCoord) =>
-        `${baseUrl}/${tileCoord[0]}/${tileCoord[1]}/${tileCoord[2]}.png?key=${apiKey}`,
+        `${baseUrl}/${tileCoord[0]}/${tileCoord[1]}/${tileCoord[2]}.png?key=${opt.apiKey}`,
       (r, g, b) => 256 * r + g - 32768,
       {
         maxZoom: 11,
@@ -100,12 +104,15 @@ export class NasaDemTileSource extends TileSource {
 }
 
 export class MapTilerTileSource extends TileSource {
-  constructor(apiKey: string, opt: TileSourceOptions = {}) {
+  constructor(opt: TileSourceOptions = {}) {
+    if (!("apiKey" in opt))
+      throw new Error(`apiKey required for MapTiler source`);
+
     const baseUrl = "https://api.maptiler.com/tiles/terrain-rgb";
 
     super(
       (tileCoord: TileCoord) =>
-        `${baseUrl}/${tileCoord[0]}/${tileCoord[1]}/${tileCoord[2]}.png?key=${apiKey}`,
+        `${baseUrl}/${tileCoord[0]}/${tileCoord[1]}/${tileCoord[2]}.png?key=${opt.apiKey}`,
       (r, g, b) => -10000 + (r * 256 * 256 + g * 256 + b) * 0.1,
       {
         maxZoom: 10,
@@ -117,12 +124,15 @@ export class MapTilerTileSource extends TileSource {
 }
 
 export class MapboxTileSource extends TileSource {
-  constructor(apiKey: string, opt: TileSourceOptions = {}) {
+  constructor(opt: TileSourceOptions = {}) {
+    if (!("apiKey" in opt))
+      throw new Error(`apiKey required for Mapbox source`);
+
     const baseUrl = "https://api.mapbox.com/v4/mapbox.terrain-rgb";
 
     super(
       (tileCoord: TileCoord) =>
-        `${baseUrl}/${tileCoord[0]}/${tileCoord[1]}/${tileCoord[2]}.pngraw?access_token=${apiKey}`,
+        `${baseUrl}/${tileCoord[0]}/${tileCoord[1]}/${tileCoord[2]}.pngraw?access_token=${opt.apiKey}`,
       (r, g, b) => -10000 + (r * 256 * 256 + g * 256 + b) * 0.1,
       {
         maxZoom: 17,
