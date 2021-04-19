@@ -45,7 +45,7 @@ export default [
       globals,
     },
     external: ["fast-png", "path", "fs", "p-limit", "cross-fetch"],
-    plugins: [typescript()],
+    plugins: [typescript(), replacePlimitWithDefault],
   },
   // browser bundle
   {
