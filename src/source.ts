@@ -7,6 +7,7 @@ const plimit = plimit_;
 
 type TileSourceOptions = {
   concurrency?: number;
+  numRetries?: number;
   verbose?: boolean;
   apiKey?: string;
 };
@@ -20,6 +21,7 @@ export class TileSource {
   urlFn: Function;
 
   maxZoom: number;
+  numRetries: number;
 
   verbose: boolean;
   _queue: any;
@@ -36,10 +38,14 @@ export class TileSource {
     this.maxZoom = specs.maxZoom;
 
     this.verbose = opt.verbose || false;
+    this.numRetries = opt.numRetries || 4;
     this._queue = plimit(opt.concurrency || 4);
   }
 
-  async get(tileCoord: TileCoord): Promise<ArrayBuffer> {
+  async get(
+    tileCoord: TileCoord,
+    numRetries = this.numRetries
+  ): Promise<ArrayBuffer> {
     if (tileCoord[0] > this.maxZoom)
       throw new Error(
         `tileCoord ${tileCoord} out of bounds (maxZoom: ${this.maxZoom})`
@@ -47,19 +53,31 @@ export class TileSource {
 
     if (this.verbose) console.log(`source get: ${this.urlFn(tileCoord)}`);
 
-    return this._queue(() =>
-      fetch(this.urlFn(tileCoord), {
-        method: "GET",
-        mode: "cors",
-        redirect: "follow",
-        headers: {
-          Accept: "*",
-        },
-      }).then((resp) => {
-        if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
-        else return resp.arrayBuffer();
-      })
-    );
+    return this._queue(() => {
+      const sourceRequest = (tileCoord, numRetries) =>
+        fetch(this.urlFn(tileCoord), {
+          method: "GET",
+          mode: "cors",
+          redirect: "follow",
+          headers: {
+            Accept: "*",
+          },
+        })
+          .then((resp) => {
+            if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
+            else return resp.arrayBuffer();
+          })
+          .catch((error) => {
+            if (numRetries === 0)
+              throw new Error(`retries exhausted for ${tileCoord.join("/")}`);
+            else {
+              console.log(`z-factory: source error: ${error.message} (retry #${numRetries})`);
+              return sourceRequest(tileCoord, numRetries - 1);
+            }
+          });
+
+      return sourceRequest(tileCoord, numRetries);
+    });
   }
 }
 

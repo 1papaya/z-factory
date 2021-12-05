@@ -69,9 +69,10 @@ export class FileTileCache extends TileCache {
         source.get(tileCoord).then((arrayBuffer) =>
           fs.promises
             .mkdir(path.dirname(localTilePath), { recursive: true })
-            .then(() =>
-              fs.promises.writeFile(localTilePath, Buffer.from(arrayBuffer))
-            )
+            .then(() => {
+              console.log(`writing ${localTilePath}`);
+              return fs.promises.writeFile(localTilePath, Buffer.from(arrayBuffer));
+            })
             .then(() => arrayBuffer)
         )
       )
